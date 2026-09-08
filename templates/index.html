@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered MCQ Platform</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#2563eb',
+                            600: '#1d4ed8',
+                            700: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js for analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-border {
+            background: linear-gradient(60deg, #3b82f6, #8b5cf6, #ec4899);
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
+
+    <!-- Top Navigation Header -->
+    <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="app.showPage('home')">
+                <div class="p-2.5 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl shadow-lg shadow-blue-500/20">
+                    <i data-lucide="brain-circuit" class="w-6 h-6 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight bg-gradient-to-r from-blue-400 to-indigo-300 bg-clip-text text-transparent">
+                        AI QuizMaster
+                    </h1>
+                    <p class="text-xs text-slate-400">PDF & Topic MCQ Platform</p>
+                </div>
+            </div>
+
+            <nav class="flex items-center space-x-2">
+                <button onclick="app.showPage('home')" class="px-3 py-2 text-sm font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5">
+                    <i data-lucide="plus-circle" class="w-4 h-4 text-blue-400"></i> New Quiz
+                </button>
+                <button onclick="app.showPage('history')" class="px-3 py-2 text-sm font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5">
+                    <i data-lucide="history" class="w-4 h-4 text-indigo-400"></i> History
+                </button>
+                <button onclick="app.toggleSettingsModal()" class="px-3 py-2 text-sm font-medium rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5">
+                    <i data-lucide="settings" class="w-4 h-4"></i> Settings
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-6xl w-full mx-auto p-4 md:p-6">
+        
+        <!-- PAGE 1: QUIZ GENERATOR (HOME) -->
+        <section id="page-home" class="space-y-6">
+            <!-- Hero Title -->
+            <div class="text-center max-w-2xl mx-auto my-4 space-y-2">
+                <span class="px-3 py-1 text-xs font-semibold rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                    ✨ AI-Powered Learning & Assessment
+                </span>
+                <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-white">
+                    Generate MCQs & Instant Explanations
+                </h2>
+                <p class="text-slate-400 text-sm md:text-base">
+                    Upload your course PDF or enter any topic to test your knowledge with real-time feedback.
+                </p>
+            </div>
+
+            <!-- Main Form Card -->
+            <div class="bg-slate-850 bg-slate-800/40 border border-slate-700/60 rounded-2xl p-6 md:p-8 backdrop-blur shadow-2xl max-w-3xl mx-auto">
+                
+                <!-- Input Mode Tabs -->
+                <div class="grid grid-cols-2 p-1.5 bg-slate-900/80 rounded-xl mb-6 border border-slate-800">
+                    <button id="tab-pdf" onclick="app.setMode('pdf')" class="py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 bg-blue-600 text-white shadow-md">
+                        <i data-lucide="file-text" class="w-4 h-4"></i> PDF Upload Mode
+                    </button>
+                    <button id="tab-topic" onclick="app.setMode('topic')" class="py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 text-slate-400 hover:text-white">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i> Custom Topic Mode
+                    </button>
+                </div>
+
+                <!-- PDF Upload Zone -->
+                <div id="section-pdf-input" class="space-y-4">
+                    <div id="dropzone" onclick="document.getElementById('pdf-file-input').click()" class="border-2 border-dashed border-slate-700 hover:border-blue-500 bg-slate-900/40 hover:bg-blue-500/5 rounded-xl p-8 text-center cursor-pointer transition duration-200">
+                        <input type="file" id="pdf-file-input" accept=".pdf" class="hidden" onchange="app.handleFileSelect(event)">
+                        <div class="w-14 h-14 bg-blue-500/10 text-blue-400 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i data-lucide="upload-cloud" class="w-7 h-7"></i>
+                        </div>
+                        <p class="font-semibold text-slate-200 text-base" id="file-label">Click or Drag & Drop PDF here</p>
+                        <p class="text-xs text-slate-400 mt-1">Supports lecture slides, chapters, notes (Max 20MB)</p>
+                    </div>
+                </div>
+
+                <!-- Topic Input Zone -->
+                <div id="section-topic-input" class="hidden space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Topic or Concept Name</label>
+                        <div class="relative">
+                            <i data-lucide="search" class="w-5 h-5 absolute left-3.5 top-3.5 text-slate-500"></i>
+                            <input type="text" id="topic-input" placeholder="e.g. Operating Systems - Paging, Machine Learning, World History..." 
+                                   class="w-full bg-slate-900/90 border border-slate-700 rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2 text-xs text-slate-400">
+                        <span>Quick suggestions:</span>
+                        <button onclick="app.setQuickTopic('Operating Systems - Paging')" class="hover:text-blue-400 underline">OS Paging</button>
+                        <button onclick="app.setQuickTopic('CPU Scheduling Algorithms')" class="hover:text-blue-400 underline">CPU Scheduling</button>
+                        <button onclick="app.setQuickTopic('Database Indexing & B-Trees')" class="hover:text-blue-400 underline">Database Indexing</button>
+                    </div>
+                </div>
+
+                <hr class="border-slate-700/50 my-6">
+
+                <!-- Configuration Controls -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Question Count -->
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2.5">
+                            Number of Questions
+                        </label>
+                        <div class="grid grid-cols-4 gap-2">
+                            <button type="button" onclick="app.setCount(5)" class="btn-count py-2 text-sm font-bold rounded-lg border border-slate-700 bg-slate-900 text-slate-300 hover:border-blue-500 hover:text-white" data-count="5">5</button>
+                            <button type="button" onclick="app.setCount(10)" class="btn-count py-2 text-sm font-bold rounded-lg border border-blue-500 bg-blue-600 text-white shadow-md" data-count="10">10</button>
+                            <button type="button" onclick="app.setCount(20)" class="btn-count py-2 text-sm font-bold rounded-lg border border-slate-700 bg-slate-900 text-slate-300 hover:border-blue-500 hover:text-white" data-count="20">20</button>
+                            <button type="button" onclick="app.setCount(50)" class="btn-count py-2 text-sm font-bold rounded-lg border border-slate-700 bg-slate-900 text-slate-300 hover:border-blue-500 hover:text-white" data-count="50">50</button>
+                        </div>
+                    </div>
+
+                    <!-- Difficulty -->
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2.5">
+                            Difficulty Level
+                        </label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button type="button" onclick="app.setDifficulty('Easy')" class="btn-diff py-2 text-sm font-bold rounded-lg border border-slate-700 bg-slate-900 text-slate-300 hover:border-emerald-500 hover:text-emerald-400" data-diff="Easy">Easy</button>
+                            <button type="button" onclick="app.setDifficulty('Medium')" class="btn-diff py-2 text-sm font-bold rounded-lg border border-amber-500 bg-amber-500/10 text-amber-400" data-diff="Medium">Medium</button>
+                            <button type="button" onclick="app.setDifficulty('Hard')" class="btn-diff py-2 text-sm font-bold rounded-lg border border-slate-700 bg-slate-900 text-slate-300 hover:border-rose-500 hover:text-rose-400" data-diff="Hard">Hard</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Action -->
+                <button id="btn-generate" onclick="app.generateQuiz()" class="w-full mt-8 py-3.5 px-6 rounded-xl font-bold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 shadow-xl shadow-blue-600/25 transition transform active:scale-[0.99] flex items-center justify-center gap-2">
+                    <i data-lucide="play" class="w-5 h-5 fill-current"></i>
+                    <span>Generate AI Quiz</span>
+                </button>
+
+                <!-- Loading State -->
+                <div id="loading-spinner" class="hidden mt-6 text-center space-y-3">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
+                    <p class="text-sm font-medium text-slate-300" id="loading-text">Extracting PDF content & generating AI questions...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 2: INTERACTIVE QUIZ INTERFACE -->
+        <section id="page-quiz" class="hidden space-y-6 animate-fade-in max-w-4xl mx-auto">
+            <!-- Header bar -->
+            <div class="bg-slate-800/80 border border-slate-700/80 rounded-xl p-4 flex items-center justify-between shadow-lg">
+                <div>
+                    <span id="quiz-title-badge" class="text-xs font-semibold px-2.5 py-1 rounded bg-blue-500/20 text-blue-300">Operating Systems</span>
+                    <h3 id="quiz-question-counter" class="text-lg font-extrabold text-white mt-1">Question 1 / 10</h3>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-1.5 text-sm font-mono font-bold bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-700 text-amber-400">
+                        <i data-lucide="clock" class="w-4 h-4"></i>
+                        <span id="timer-display">00:00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden border border-slate-700/50">
+                <div id="quiz-progress-bar" class="bg-gradient-to-r from-blue-500 to-indigo-500 h-2 rounded-full transition-all duration-300" style="width: 10%;"></div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-6 md:p-8 space-y-6 shadow-xl">
+                <!-- Question text -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between text-xs text-slate-400 font-medium">
+                        <span id="q-subtopic-tag" class="text-blue-400 font-semibold">Subtopic: CPU Scheduling</span>
+                        <span id="q-source-page" class="bg-slate-700/60 px-2 py-0.5 rounded text-slate-300">PDF Page 1</span>
+                    </div>
+                    <h2 id="q-text" class="text-xl md:text-2xl font-bold text-slate-100 leading-snug">
+                        Which scheduling algorithm can cause starvation?
+                    </h2>
+                </div>
+
+                <!-- 4 Options Grid -->
+                <div id="options-container" class="grid grid-cols-1 gap-3.5">
+                    <!-- Options injected dynamically by JS -->
+                </div>
+
+                <!-- Explanation Card (Visible after option selection) -->
+                <div id="explanation-box" class="hidden p-5 rounded-xl border transition-all duration-300 animate-fade-in space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span id="explanation-badge" class="px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5">
+                            <!-- Correct / Wrong badge -->
+                        </span>
+                    </div>
+                    <p id="explanation-text" class="text-sm leading-relaxed">
+                        <!-- Detailed AI explanation -->
+                    </p>
+                </div>
+
+                <!-- Footer Navigation -->
+                <div class="flex items-center justify-between pt-4 border-t border-slate-700/60">
+                    <button onclick="app.prevQuestion()" id="btn-prev-q" class="px-4 py-2 text-sm font-semibold text-slate-400 hover:text-white bg-slate-900 border border-slate-700 rounded-lg hover:bg-slate-800 transition disabled:opacity-40">
+                        ← Previous
+                    </button>
+                    
+                    <button onclick="app.nextQuestion()" id="btn-next-q" class="px-6 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-lg shadow-lg shadow-blue-600/30 transition flex items-center gap-2">
+                        <span>Next Question</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 3: RESULTS & ANALYTICS -->
+        <section id="page-results" class="hidden space-y-8 animate-fade-in max-w-4xl mx-auto">
+            <!-- Top Summary Header -->
+            <div class="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+                    <div class="space-y-2 text-center md:text-left">
+                        <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                            Quiz Completed! 🎉
+                        </span>
+                        <h2 class="text-3xl font-extrabold text-white" id="results-title">Performance Summary</h2>
+                        <p class="text-slate-400 text-sm" id="results-time-spent">Time Spent: 4m 12s</p>
+                    </div>
+
+                    <!-- Score Card Gauge -->
+                    <div class="flex items-center gap-6 bg-slate-800/80 p-5 rounded-xl border border-slate-700">
+                        <div class="text-center">
+                            <p class="text-xs uppercase font-semibold text-slate-400">Score</p>
+                            <p id="res-score-num" class="text-3xl font-black text-blue-400">16 / 20</p>
+                        </div>
+                        <div class="h-10 w-px bg-slate-700"></div>
+                        <div class="text-center">
+                            <p class="text-xs uppercase font-semibold text-slate-400">Accuracy</p>
+                            <p id="res-accuracy-pct" class="text-3xl font-black text-emerald-400">80%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Insights & Breakdown Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Strong Areas -->
+                <div class="bg-slate-800/60 border border-slate-700/80 rounded-xl p-5 space-y-3">
+                    <div class="flex items-center gap-2 text-emerald-400 font-bold text-base">
+                        <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                        <h3>Strong Areas</h3>
+                    </div>
+                    <ul id="list-strong-areas" class="space-y-2 text-sm text-slate-300">
+                        <!-- Items -->
+                    </ul>
+                </div>
+
+                <!-- Needs Improvement -->
+                <div class="bg-slate-800/60 border border-slate-700/80 rounded-xl p-5 space-y-3">
+                    <div class="flex items-center gap-2 text-rose-400 font-bold text-base">
+                        <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                        <h3>Needs Improvement</h3>
+                    </div>
+                    <ul id="list-needs-improvement" class="space-y-2 text-sm text-slate-300">
+                        <!-- Items -->
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Detailed Question Review Accordion -->
+            <div class="bg-slate-800/60 border border-slate-700 rounded-xl p-6 space-y-4">
+                <h3 class="font-bold text-lg text-white flex items-center gap-2">
+                    <i data-lucide="list-checks" class="w-5 h-5 text-blue-400"></i>
+                    Question-by-Question Review
+                </h3>
+                <div id="questions-review-list" class="space-y-4">
+                    <!-- Rendered by JS -->
+                </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex flex-wrap items-center justify-center gap-4 pt-4">
+                <button onclick="app.showPage('home')" class="px-6 py-3 rounded-xl font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/30 transition">
+                    Start Another Quiz
+                </button>
+                <button onclick="app.showPage('history')" class="px-6 py-3 rounded-xl font-bold bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition">
+                    View Quiz History
+                </button>
+            </div>
+        </section>
+
+        <!-- PAGE 4: QUIZ HISTORY -->
+        <section id="page-history" class="hidden space-y-6 animate-fade-in max-w-4xl mx-auto">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-white">Quiz History & Saved Results</h2>
+                    <p class="text-sm text-slate-400">Review your past performance and track your learning journey over time.</p>
+                </div>
+                <button onclick="app.loadHistory()" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <div class="bg-slate-800/60 border border-slate-700 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-slate-300">
+                        <thead class="bg-slate-900/80 text-xs uppercase font-semibold text-slate-400 border-b border-slate-700">
+                            <tr>
+                                <th class="p-4">Quiz Title</th>
+                                <th class="p-4">Mode</th>
+                                <th class="p-4">Difficulty</th>
+                                <th class="p-4">Score</th>
+                                <th class="p-4">Accuracy</th>
+                                <th class="p-4">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body" class="divide-y divide-slate-700/50">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-850 bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-md w-full space-y-5 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-lg text-white flex items-center gap-2">
+                    <i data-lucide="key" class="w-5 h-5 text-amber-400"></i> Settings & API Key
+                </h3>
+                <button onclick="app.toggleSettingsModal()" class="text-slate-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-3">
+                <label class="block text-xs font-semibold uppercase text-slate-400">Google Gemini API Key (Optional)</label>
+                <input type="password" id="gemini-api-key-input" placeholder="AIzaSy..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-none">
+                <p class="text-xs text-slate-400 leading-normal">
+                    Enter your Gemini API key to enable live AI question generation. If left blank, the app uses an intelligent built-in offline generator.
+                </p>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-2">
+                <button onclick="app.saveApiKey()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-semibold text-sm shadow-md">
+                    Save Key
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application JavaScript -->
+    <script src="/static/js/app.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
