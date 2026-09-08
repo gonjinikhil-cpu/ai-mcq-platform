@@ -2,10 +2,20 @@
 
 An AI-powered multiple-choice quiz platform that converts PDF documents and user-defined topics into interactive quizzes with instant answer feedback, AI explanations, score analytics, and history tracking.
 
-![AI MCQ Platform](https://img.shields.io/badge/FastAPI-0.141-009688?style=for-the-badge&logo=fastapi)
-![Python](https://img.shields.io/badge/Python-3.14-3776AB?style=for-the-badge&logo=python)
-![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.0-38B2AC?style=for-the-badge&logo=tailwind-css)
-![Gemini AI](https://img.shields.io/badge/Google%20Gemini-API-8E75B2?style=for-the-badge&logo=google)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-gonjinikhil--cpu%2Fai--mcq--platform-181717?style=for-the-badge&logo=github)](https://github.com/gonjinikhil-cpu/ai-mcq-platform)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.141-009688?style=for-the-badge&logo=fastapi)](http://127.0.0.1:8000)
+[![Python](https://img.shields.io/badge/Python-3.14-3776AB?style=for-the-badge&logo=python)](https://www.python.org/)
+[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.0-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
+
+---
+
+## 🔗 Quick Navigation Links
+
+- 🌐 **Live Web Application**: [http://127.0.0.1:8000](http://127.0.0.1:8000)
+- 📝 **Create New AI Quiz**: [http://127.0.0.1:8000/#home](http://127.0.0.1:8000/#home)
+- 📜 **Quiz History & Saved Results**: [http://127.0.0.1:8000/#history](http://127.0.0.1:8000/#history)
+- 📖 **Interactive API Documentation (Swagger)**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+- 🐙 **GitHub Project Repository**: [https://github.com/gonjinikhil-cpu/ai-mcq-platform](https://github.com/gonjinikhil-cpu/ai-mcq-platform)
 
 ---
 

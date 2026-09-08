@@ -22,7 +22,8 @@ class MCQApp {
 
     init() {
         if (this.apiKey) {
-            document.getElementById('gemini-api-key-input').value = this.apiKey;
+            const input = document.getElementById('gemini-api-key-input');
+            if (input) input.value = this.apiKey;
         }
 
         // Setup Drag & Drop
@@ -48,6 +49,37 @@ class MCQApp {
                     this.setFile(files[0]);
                 }
             });
+        }
+
+        // Handle Hash Navigation & Browser Back/Forward buttons
+        window.addEventListener('hashchange', () => this.handleHashChange());
+        window.addEventListener('load', () => this.handleHashChange());
+    }
+
+    handleHashChange() {
+        const hash = window.location.hash.replace('#', '') || 'home';
+        if (['home', 'quiz', 'results', 'history'].includes(hash)) {
+            this.showPage(hash, false);
+        }
+    }
+
+    showPage(pageId, updateHash = true) {
+        ['home', 'quiz', 'results', 'history'].forEach(p => {
+            const el = document.getElementById(`page-${p}`);
+            if (el) {
+                if (p === pageId) el.classList.remove('hidden');
+                else el.classList.add('hidden');
+            }
+        });
+
+        if (updateHash && window.location.hash !== `#${pageId}`) {
+            window.history.pushState(null, '', `#${pageId}`);
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        if (pageId === 'history') {
+            this.loadHistory();
         }
     }
 
@@ -120,7 +152,7 @@ class MCQApp {
 
     toggleSettingsModal() {
         const modal = document.getElementById('settings-modal');
-        modal.classList.toggle('hidden');
+        if (modal) modal.classList.toggle('hidden');
     }
 
     saveApiKey() {
@@ -129,20 +161,6 @@ class MCQApp {
         localStorage.setItem('gemini_api_key', key);
         this.toggleSettingsModal();
         alert('Settings saved successfully!');
-    }
-
-    showPage(pageId) {
-        ['home', 'quiz', 'results', 'history'].forEach(p => {
-            const el = document.getElementById(`page-${p}`);
-            if (el) {
-                if (p === pageId) el.classList.remove('hidden');
-                else el.classList.add('hidden');
-            }
-        });
-
-        if (pageId === 'history') {
-            this.loadHistory();
-        }
     }
 
     async generateQuiz() {
@@ -298,7 +316,7 @@ class MCQApp {
             }
             
             document.getElementById('explanation-text').innerText = q.explanation;
-            lucide.createIcons();
+            if (window.lucide) lucide.createIcons();
         } else {
             expBox.classList.add('hidden');
         }
@@ -313,7 +331,7 @@ class MCQApp {
             btnNext.innerHTML = `<span>Next Question</span> <i data-lucide="arrow-right" class="w-4 h-4"></i>`;
             btnNext.className = 'px-6 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-lg shadow-lg shadow-blue-600/30 transition flex items-center gap-2';
         }
-        lucide.createIcons();
+        if (window.lucide) lucide.createIcons();
     }
 
     selectOption(qId, optionIdx) {
@@ -417,7 +435,7 @@ class MCQApp {
             `;
         }).join('');
 
-        lucide.createIcons();
+        if (window.lucide) lucide.createIcons();
     }
 
     async loadHistory() {
